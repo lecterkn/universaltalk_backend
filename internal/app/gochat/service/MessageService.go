@@ -117,21 +117,21 @@ func (MessageService) CreateMessage(userId, channelId uuid.UUID, message string)
 	if err != nil {
 		return nil, response.InternalError("failed to create message")
 	}
-	// ブロードキャスト
+	// jsonに変換
 	messageJson, err := json.Marshal(model)
 	if err != nil {
 		fmt.Println("failed to unmarshal message")
 	}
+	// redisにパブリッシュ
 	_, err = redisService.Publish(Broadcast, RedisMessage{
 		SrcUser: model.UserId,
-		Event:   Message,
+		Event:   AddMessage,
 		Message: string(messageJson),
 	})
 	if err != nil {
 		fmt.Println(err.Error())
 		fmt.Println("failed to publish message")
 	}
-	// TODO redisのエラー処理
 	return model, nil
 }
 
@@ -152,6 +152,21 @@ func (MessageService) UpdateMessage(userId, channelId, messageId uuid.UUID, mess
 	model, err = messageRepository.Update(*model)
 	if err != nil {
 		return nil, response.InternalError("failed to update message")
+	}
+	// jsonに変換
+	messageJson, err := json.Marshal(model)
+	if err != nil {
+		fmt.Println("failed to unmarshal message")
+	}
+	// redisにパブリッシュ
+	_, err = redisService.Publish(Broadcast, RedisMessage{
+		SrcUser: model.UserId,
+		Event:   UpdateMessage,
+		Message: string(messageJson),
+	})
+	if err != nil {
+		fmt.Println(err.Error())
+		fmt.Println("failed to publish message")
 	}
 	return model, nil
 }
@@ -174,6 +189,21 @@ func (MessageService) DeleteMessage(userId, channelId, messageId uuid.UUID) *res
 	_, err = messageRepository.Update(*model)
 	if err != nil {
 		return response.InternalError("failed to delete message")
+	}
+	// jsonに変換
+	messageJson, err := json.Marshal(model)
+	if err != nil {
+		fmt.Println("failed to unmarshal message")
+	}
+	// redisにパブリッシュ
+	_, err = redisService.Publish(Broadcast, RedisMessage{
+		SrcUser: model.UserId,
+		Event:   DeleteMessage,
+		Message: string(messageJson),
+	})
+	if err != nil {
+		fmt.Println(err.Error())
+		fmt.Println("failed to publish message")
 	}
 	return nil
 }

@@ -11,9 +11,16 @@ import (
 type RedisChannel string
 type RedisMessageEvent string
 
+// RedisChannel
 const (
 	Broadcast = RedisChannel("broadcast")
-	Message   = RedisMessageEvent("message")
+)
+
+// RedisMessageEvent
+const (
+	AddMessage    = RedisMessageEvent("add_message")
+	UpdateMessage = RedisMessageEvent("update_message")
+	DeleteMessage = RedisMessageEvent("delete_message")
 )
 
 func (rc RedisChannel) ToString() string {
